@@ -21,8 +21,6 @@
 - 可以在網址`http://127.0.0.1:8001/`看到hello
 
 
-### 試一下載入靜態網頁
-- http://127.0.0.1:8001/W01-6.html
-
-### 設計 API: demo-02
+### 進一步的說明請看
+- https://github.com/maloyang/khpy_flask_tutorial_20220524/blob/main/Day02/flask_intro.ipynb
 
