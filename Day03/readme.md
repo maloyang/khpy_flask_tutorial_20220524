@@ -5,7 +5,7 @@
 - 前面沒有參與的零基礎學員可以[這邊回顧](https://github.com/maloyang/khpy_flask_tutorial_20220524)
 - 有Python基礎，想要了解Flask如何使用，並佈署上雲端平台可以[回顧這篇](https://github.com/maloyang/khpy_flask_tutorial_20220524/tree/main/Day02)
 
-
+----
 ### 建立MySQL資料庫
 - 我們先以Heroku建立MySQL來加快我們的進度
 - 在Resources分頁，可以查找到mysql的Add-ons，並進行安裝
@@ -22,6 +22,7 @@
 - ![day03_07](img/day03_07.png)
 - ![day03_08](img/day03_08.png)
 
+----
 ### flask使用sqlalchemy連接MySQL
 - 承接上星期的demo_07，我們需要修改程式如`demo_03_01`
 - 因為加入了一些新的module，所以在requestment中也加入如下：
@@ -56,6 +57,7 @@ def score_insert():
         return jsonify({'result':'NG', 'log':str(e)})
 ```
 
+----
 ### 把寫入的資料讀出來
 - 新增API如下
 ```python
@@ -78,6 +80,7 @@ def score_get():
         return jsonify({'result':'NG', 'log':str(e)})
 ```
 
+----
 ### 在網頁上顯示API的資訊
 - html的基本框架
 - 網頁的Title
