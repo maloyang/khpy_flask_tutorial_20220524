@@ -1,0 +1,71 @@
+<html>
+    <head>
+        <title>一年一班成績清單</title>
+
+        <style>
+          table, th, td {
+            border: 1px solid black;
+          }
+        </style>
+
+        <script src="/static/js/jquery-3.4.1.min.js"></script>
+        <script type="text/javascript">
+        
+            function load_data()
+            {
+                $.get("/score",
+                function(data)
+                {
+                  console.log(data);
+                  console.log(data.data.length);
+                  if (data.result == "OK")
+                  {
+                    my_data = data.data;
+
+                    html = '';
+                    for (var key in my_data)
+                    {
+                      console.log(key, my_data[key]);
+                      html += '<tr>';
+                      html += '  <td >'+key+'</td>';
+                      html += '  <td >'+my_data[key]+'</td>';
+                      html += '</tr>';
+                    }
+                    $("#table_body").html(html);
+                  }
+                  else
+                  {
+                    //$("#data_state").text("資料載入錯誤!!");
+                    console.log("資料載入錯誤!!");
+                  }                 
+                }
+              );
+
+              //timerFlag = setTimeout(load_farm_last, 10000); //Reload per 30 sec
+            }
+        
+        </script>
+    </head>
+
+    <body>
+        
+        <table>
+            <thead>
+              <tr>
+                <th>名字</th>
+                <th>分數</th>
+              </tr>
+            </thead>
+            <tbody id="table_body">
+            </tbody>
+          </table>
+
+        <script type="text/javascript">
+            $( document ).ready(function() {
+
+                load_data();
+                
+            });
+        </script>    
+    </body>
+</html>

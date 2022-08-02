@@ -1,0 +1,55 @@
+<html>
+    <head>
+        <title>一年一班成績清單</title>
+        <script src="static/js/jquery-3.4.1.min.js"></script>
+        <script type="text/javascript">
+            var stNo;
+            var plants;
+        
+            function load_data()
+            {
+                $.get(domain+"/farm5/last",
+                function(data)
+                {
+                  $("#data_loading").hide();
+                  console.log(data);
+                  if (data.length==0)
+                    return;
+                  //先判斷是否已登入
+                  else if (data.log == "not login")
+                    window.location = 'login.html';
+      
+                  data_last = data.data;
+                  
+                  if (data.result == "OK")
+                  {
+                    // 即時資訊
+                    $("#v1").text(v1);
+                    $("#v1_dtime").text(v1_dtime);
+                  }
+                  else
+                  {
+                    $("#data_state").text("資料載入錯誤!!");
+                  }                 
+                }
+              );
+
+              timerFlag = setTimeout(load_farm_last, 10000); //Reload per 30 sec
+            }
+        
+        </script>
+
+    </head>
+
+    <body>
+        
+
+        <script type="text/javascript">
+            $( document ).ready(function() {
+
+                load_data();
+                
+            });
+        </script>    
+    </body>
+</html>

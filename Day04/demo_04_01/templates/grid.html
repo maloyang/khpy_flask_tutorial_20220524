@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>肉鵝養殖監控系統</title>
+        <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+        <link href="css/styles.css" rel="stylesheet" />
+        <link href="css/dataTables.bootstrap4.min.css" rel="stylesheet" crossorigin="anonymous" />
+        <link rel="stylesheet" href="css/jquery-ui.min.css">
+        <link rel="manifest" href="/manifest.json">
+        <style>
+            #example-seven, #example-eight {
+                border-radius: 50%;
+                background: #BADA55;
+            }
+
+            .b-radius {
+                width: 50px;
+                height: 50px;
+                float: left;
+                margin: 0 10px 10px 0;
+            }
+            .radius-red {
+                border-radius: 50%;
+                background: #B81D13;
+            }
+            .radius-green {
+                border-radius: 50%;
+                background: #008450;
+            }
+            .radius-gray {
+                border-radius: 50%;
+                background: #919191;
+            }
+            .img_size {
+                max-height: 100%;  
+                max-width: 100%; 
+                width: auto;
+                height: auto;
+                position: absolute;  
+                top: 0;  
+                bottom: 0;  
+                left: 0;  
+                right: 0;  
+                margin: auto;
+
+                height: 360px; /*can be anything*/
+                width: 360px; /*can be anything*/
+                position: relative;
+            }
+        </style>
+        <script src="js/font-awesome/all.min.js" crossorigin="anonymous"></script>
+        <script type="text/javascript">
+            var stNo;
+            var plants;
+            var plant_device;
+            var select_id = undefined;
+            var str_today;
+            var cookie_plant,cookie_permit;
+            var myChartDay,myChartMonth,myChartYear;
+            var gaugeChart;
+            var apiFilter;
+            var timerFlag,timerFlagImg;
+      
+            function load_farm_last()
+            {
+                $("#data_loading").show();
+                //刪除舊有timeout，避免重複導致時間錯亂
+                if (timerFlag){
+                    clearTimeout(timerFlag);
+                    timerFlag = "";
+                }
+
+                $.get(domain+"/farm5/last",
+                function(data)
+                {
+                  $("#data_loading").hide();
+                  console.log(data);
+                  if (data.length==0)
+                    return;
+                  //先判斷是否已登入
+                  else if (data.log == "not login")
+                    window.location = 'login.html';
+      
+                  data_last = data.data;
+                  
+                  if (data.result == "OK")
+                  {
+                    //B7 資訊載入
+                    v1 = data_last.B7_v1.value;
+                    v1_dtime = data_last.B7_v1.dtime;
+                    v2 = data_last.B7_v2.value;
+                    v2_dtime = data_last.B7_v2.dtime;
+                    v3 = data_last.B7_v3.value;
+                    v3_dtime = data_last.B7_v3.dtime;
+                    a1 = data_last.B7_a1.value;
+                    a1_dtime = data_last.B7_a1.dtime;
+                    a2 = data_last.B7_a2.value;
+                    a2_dtime = data_last.B7_a2.dtime;
+                    a3 = data_last.B7_a3.value;
+                    a3_dtime = data_last.B7_a3.dtime;
+                    total_e = data_last.B7_total_e.value;
+                    total_e_dtime = data_last.B7_total_e.dtime;
+                    //B3 磅秤
+                    b3_weight = data_last.B3_weight.value
+                    b3_weight_dtime = data_last.B3_weight.dtime
+                    b3_unit = data_last.B3_unit.value
+                    b3_unit_dtime = data_last.B3_unit.dtime
+                    //B2 air
+                    b2_wind = data_last.B2_wind.value;
+                    b2_wind_dtime = data_last.B2_wind.dtime;
+
+                    b2_temp = data_last.B2_temp.value;
+                    b2_temp_dtime = data_last.B2_temp.dtime;
+                    b2_humi = data_last.B2_humi.value;
+                    b2_humi_dtime = data_last.B2_humi.dtime;
+                    b2_co2 = data_last.B2_co2.value;
+                    b2_co2_dtime = data_last.B2_co2.dtime;
+                    b2_pressure = data_last.B2_pressure.value;
+                    b2_pressure_dtime = data_last.B2_pressure.dtime;
+
+
+                    // 即時資訊
+                    $("#v1").text(v1);
+                    $("#v1_dtime").text(v1_dtime);
+                    $("#v2").text(v2);
+                    $("#v2_dtime").text(v2_dtime);
+                    $("#v3").text(v3);
+                    $("#v3_dtime").text(v3_dtime);
+                    $("#a1").text(a1);
+                    $("#a1_dtime").text(a1_dtime);
+                    $("#a2").text(a2);
+                    $("#a2_dtime").text(a2_dtime);
+                    $("#a3").text(a3);
+                    $("#a3_dtime").text(a3_dtime);
+                    $("#total_e").text(total_e);
+                    $("#total_e_dtime").text(total_e_dtime);
+
+                    $("#b3_weight").text(b3_weight);
+                    $("#b3_weight_dtime").text(b3_weight_dtime);
+                    $("#b3_unit").text(b3_unit);
+                    $("#b3_unit_dtime").text(b3_unit_dtime);
+
+                    $("#b2_wind").text(b2_wind);
+                    $("#b2_wind_dtime").text(b2_wind_dtime);
+                    $("#b2_temp").text(b2_temp);
+                    $("#b2_temp_dtime").text(b2_temp_dtime);
+                    $("#b2_humi").text(b2_humi);
+                    $("#b2_humi_dtime").text(b2_humi_dtime);
+                    $("#b2_co2").text(b2_co2);
+                    $("#b2_co2_dtime").text(b2_co2_dtime);
+                    $("#b2_pressure").text(b2_pressure);
+                    $("#b2_pressure_dtime").text(b2_pressure_dtime);
+
+                  }
+                  else
+                  {
+                    $("#data_state").text("資料載入錯誤!!");
+                  }                 
+                }
+              );
+
+              timerFlag = setTimeout(load_farm_last, 10000); //Reload per 30 sec
+            }
+      
+            function toYYYYMMDD(d) 
+            {
+              var yyyy = d.getFullYear().toString();
+              var mm = (d.getMonth() + 101).toString().slice(-2);
+              var dd = (d.getDate() + 100).toString().slice(-2);
+              return yyyy + '-' + mm + '-' + dd;
+            }
+                  
+            function isInteger(obj) {
+                return obj%1 === 0
+            }
+      
+        /**
+         *  因為new URL(location.href)無法在IE上使用
+         *  網路上找到可chrome跟ie通用的解get傳來資訊 
+         */
+         function getQueryString() {
+            var key = false, res = {}, itm = null;
+            // get the query string without the ?
+            var qs = location.search.substring(1);
+            // check for the key as an argument
+            if (arguments.length > 0 && arguments[0].length > 1)
+            key = arguments[0];
+            // make a regex pattern to grab key/value
+            var pattern = /([^&=]+)=([^&]*)/g;
+            // loop the items in the query string, either
+            // find a match to the argument, or build an object
+            // with key/value pairs
+            while (itm = pattern.exec(qs)) {
+            if (key !== false && decodeURIComponent(itm[1]) === key)
+                return decodeURIComponent(itm[2]);
+            else if (key === false)
+                res[decodeURIComponent(itm[1])] = decodeURIComponent(itm[2]);
+            }
+
+            return key === false ? res : null;
+        }
+
+          </script>
+    </head>
+    <body class="sb-nav-fixed">
+        <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+            <a class="navbar-brand" href="#">肉鵝養殖監控系統</a><button class="btn btn-link btn-sm order-1 order-lg-0" id="sidebarToggle" href="#"><i class="fas fa-bars"></i></button>
+            <div class="navbar-brand d-none d-md-inline-block form-inline ml-auto mr-0 mr-md-3 my-2 my-md-0"></div>
+            <ul class="navbar-nav ml-auto ml-md-0">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="userDropdown" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span id="show_permit">User</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modifyPassModal">
+                            <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                            修改密碼
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                            <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                            登出
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+        <div id="layoutSidenav">
+            <div id="layoutSidenav_nav">
+                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                    <div class="sb-sidenav-menu" id="nav_menu">
+
+                    </div>
+                </nav>
+            </div>
+            <div id="layoutSidenav_content">
+                <main>
+                    <div class="container-fluid">    
+
+                        <div class="card mb-3">
+                            <div class="card-header" id="title">
+                            鵝場5號
+                            <span id="data_state"></span>
+                            <img id="data_loading" src="img/Rolling48px.gif" width="24"></img>
+                            </div>
+                        </div>
+                        <!--
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                狀態指示
+                              </div>
+                              <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                      <thead>
+                                        <tr>
+                                          <th>項目</th>
+                                          <th>狀態</th>
+                                          <th>更新時間</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody id="table_body">
+                                        <tr>
+                                            <td>外場沖水馬達</td>
+                                            <td>
+                                                <span style="color: crimson;">
+                                                    <div id="motor" class="b-radius radius-gray"></div>
+                                                </span>
+                                            </td>
+                                            <td id="motor_dtime"></td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>電燈1 (內)</td>
+                                            <td>
+                                                <span style="color: crimson;">
+                                                    <div id="light1" class="b-radius radius-gray"></div>
+                                                </span>
+                                            </td>
+                                            <td id="light1_dtime"></td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>電燈2 (中)</td>
+                                            <td>
+                                                <span style="color: crimson;">
+                                                    <div id="light2" class="b-radius radius-gray"></div>
+                                                </span>
+                                            </td>
+                                            <td id="light2_dtime"></td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>電燈3 (外)</td>
+                                            <td>
+                                                <span style="color: crimson;">
+                                                    <div id="light3" class="b-radius radius-gray"></div>
+                                                </span>
+                                            </td>
+                                            <td id="light3_dtime"></td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>水濂</td>
+                                            <td>
+                                                <span style="color: crimson;">
+                                                    <div id="water_curtain" class="b-radius radius-gray"></div>
+                                                </span>
+                                            </td>
+                                            <td id="water_curtain_dtime"></td>
+                                        </tr>                                        
+
+                                      </tbody>
+                                    </table>
+                                  </div>
+                              </div>
+                          </div>
+                        -->
+                          <div class="card mb-3">
+                            <div class="card-header">
+                                即時資訊:
+                              </div>
+                              <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                      <thead>
+                                        <tr>
+                                          <th>監測項目</th>
+                                          <th>監測數值</th>
+                                          <th>更新時間</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody id="table_body">
+                                        <tr>
+                                            <td>電壓A (V)</td>
+                                            <td id="v1"></td>
+                                            <td id="v1_dtime"></td>
+                                        </tr>   
+                                        <tr>
+                                            <td>電壓B (V)</td>
+                                            <td id="v2"></td>
+                                            <td id="v2_dtime"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>電壓C (V)</td>
+                                            <td id="v3"></td>
+                                            <td id="v3_dtime"></td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>電流A (A)</td>
+                                            <td id="a1"></td>
+                                            <td id="a1_dtime"></td>
+                                        </tr>   
+                                        <tr>
+                                            <td>電流B (A)</td>
+                                            <td id="a2"></td>
+                                            <td id="a2_dtime"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>電流C (A)</td>
+                                            <td id="a3"></td>
+                                            <td id="a3_dtime"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>總用電量 (kWh)</td>
+                                            <td id="total_e"></td>
+                                            <td id="total_e_dtime"></td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>重量 (kg)</td>
+                                            <td id="b3_weight"></td>
+                                            <td id="b3_weight_dtime"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>單位</td>
+                                            <td id="b3_unit"></td>
+                                            <td id="b3_unit_dtime"></td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>風速</td>
+                                            <td id="b2_wind"></td>
+                                            <td id="b2_wind_dtime"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>溫度</td>
+                                            <td id="b2_temp"></td>
+                                            <td id="b2_temp_dtime"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>溼度</td>
+                                            <td id="b2_humi"></td>
+                                            <td id="b2_humi_dtime"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>CO2</td>
+                                            <td id="b2_co2"></td>
+                                            <td id="b2_co2_dtime"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>大氣壓力</td>
+                                            <td id="b2_pressure"></td>
+                                            <td id="b2_pressure_dtime"></td>
+                                        </tr>
+
+                                      </tbody>
+                                    </table>
+                                  </div>
+                              </div>
+                          </div>
+
+                      </div>
+                </main>
+                <footer class="sticky-footer">
+                    <div class="container my-auto">
+                      <div class="copyright text-center my-auto">
+                        <span></span>
+                      </div>
+                    </div>
+                  </footer>
+            </div>
+        </div>
+        <!-- Scroll to Top Button-->
+        <a class="scroll-to-top rounded" href="#page-top">
+            <i class="fas fa-angle-up"></i>
+        </a>
+  
+        <!-- Logout Modal-->
+        <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">確定要登出嗎?</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <!-- <div class="modal-body"></div> -->
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">取消</button>
+                    <a id="logoutAct" class="btn btn-primary" href="#">登出</a>
+                </div>
+                </div>
+            </div>
+            </div>
+    
+        <!-- Modify Password Modal-->
+        <div class="modal fade" id="modifyPassModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">修改密碼</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="small mb-1" for="inputNowPassword">Now Password</label>
+                        <input class="form-control py-4" id="inputNowPassword" type="password" placeholder="Enter Now password" />
+                        <label class="small mb-1" for="inputPassword">New Password</label>
+                        <input class="form-control py-4" id="inputPassword" type="password" onblur="checkPassInput();" placeholder="Enter New password" />
+                        <label class="small mb-1" for="confirmPassword">Confirm New Password</label>
+                        <input class="form-control py-4" id="confirmPassword" type="password" onChange="checkPassConfirm();" placeholder="Enter New password" />
+                        <span class="tip" style="color: red; display: none;">兩次輸入的密碼不一致</span><br>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" type="button" data-dismiss="modal">取消</button>
+                        <a id="modifyPass" class="btn btn-primary" href="#">修改</a>
+                    </div>
+                    </div>
+            </div>
+        </div>
+        <!-- Bootstrap core JavaScript-->
+        <script src="js/jquery-3.4.1.min.js"></script>
+        <script src="js/bootstrap.bundle.min.js"></script>
+
+        <!-- Core plugin JavaScript-->
+        <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+
+        <!-- Page level plugin JavaScript-->
+        <script src="vendor/chart.js/Chart.min.js"></script>
+        <script src="vendor/datatables/jquery.dataTables.js"></script>
+        <script src="vendor/datatables/dataTables.bootstrap4.js"></script>
+
+        <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="js/datepicker-zh-TW.js"></script><!-- 繁體中文 -->
+
+        <script type="text/javascript" src="vendor/echartsjs/echarts.eng.min.js"></script>
+
+        <!-- cookie JavaScript-->
+        <script src="js/jquery.cookie.js"></script>
+        <script src="js/scripts.js"></script>
+        <script src="js/comm_config.js"></script>
+        <script src="js/comm.js"></script>
+        <script type="text/javascript">
+            $( document ).ready(function() {
+
+                $("#nav_menu").load("nav_menu.html"); //載入Menu
+
+                checkSession();
+                //getCookie("plant");
+    
+                //jQuery 日期選擇
+                $( "#datepicker_start" ).datepicker({dateFormat: "yy-mm-dd"});
+                $( "#datepicker_end" ).datepicker({dateFormat: "yy-mm-dd"});
+                //設定預設顯示中文
+                $.datepicker.setDefaults( $.datepicker.regional[ "zh-TW" ] );
+                //$( "#datepicker" ).datepicker( "option", "dateFormat", "yy-mm-dd" );
+                $("#datepicker_start").datepicker("setDate", new Date());
+                $("#datepicker_end").datepicker("setDate", new Date());
+
+                stNo = "";
+
+                //當視窗改變大小時，將Chart重新調整大小
+                window.onresize = function(){
+                    //console.log("windows re size!!");
+                    myChartDay.resize();
+                    //gaugeChart.resize();
+                }
+
+                $( "#logoutAct" ).click(function() {
+                    logOut();
+                });  
+    
+                $( "#modifyPass " ).click(function() {
+                    var inputPassword = $( "#inputPassword " ).val();
+                    var confirmPassword = $( "#confirmPassword " ).val();
+                    var inputNowPassword = $( "#inputNowPassword " ).val();
+                    if(inputPassword != confirmPassword){
+                        alert("兩次輸入的密碼不一致！");
+                        return false;
+                    }
+                    if (inputPassword.length == 0 || confirmPassword.length == 0 || inputNowPassword.length == 0)
+                    {
+                        alert("輸入的密碼不能空白！");
+                        return false;
+                    }
+                    if (inputPassword.length < 8 || inputPassword.length > 30)
+                    {
+                        alert("密碼長度太短或是太長，請修改!!");
+                    }
+                    modifyPassword(inputNowPassword,inputPassword);
+                    $( "#modifyPassModal" ).modal('hide');
+                }); 
+    
+                $( "#btn_inquiry" ).click(function() {
+                    let date_start = $("#datepicker_start").val();
+                    let date_end = $("#datepicker_end").val();
+                    window.open('./watergate_inquiry.html?start='+date_start+'&end='+date_end);
+                }); 
+
+                load_farm_last();
+                
+            });
+        </script>
+    </body>
+</html>
